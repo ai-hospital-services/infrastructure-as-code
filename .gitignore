@@ -1,3 +1,4 @@
 **/?*secret*
 **/.terraform*
 **/*.tfstate*
+.DS_Store
