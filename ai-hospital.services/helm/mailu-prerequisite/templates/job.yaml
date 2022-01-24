@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mysql-mailu-setup
+  namespace: {{ .Values.namespace }}
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      namespace: {{ .Values.namespace }}
+      labels:
+        app: mysql-mailu-setup
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: mysql-mailu-setup
+          image: arey/mysql-client:latest
+          imagePullPolicy: Always
+          command: ["mysql"]
+          args: [
+            "--host=mysql.mysql",
+            "--user=root",
+            "--password={{ .Values.rootDBPassword }}",
+            "--execute=\
+              create database mailu;\
+              create user mailu identified by '{{ .Values.mailuDBPassword }}';\
+              grant all privileges on mailu.* to mailu with grant option;\
+              create database roundcube;\
+              create user roundcube identified by '{{ .Values.roundcubeDBPassword }}';\
+              grant all privileges on roundcube.* to roundcube with grant option;\
+              show databases;\
+              show grants for mailu;\
+              show grants for roundcube;"]
+          resources:
+            requests:
+              cpu: 250m
+              memory: 250Mi

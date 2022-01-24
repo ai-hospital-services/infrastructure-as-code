@@ -1,0 +1,7 @@
+namespace: <NAMESPACE>
+rootDBPassword: <ROOT_DB_PASSWORD>
+mailuDBPassword: <MAILU_DB_PASSWORD>
+roundcubeDBPassword: "<ROUNDCUBE_DB_PASSWORD>"
+storageShare:
+  nfsInternalDNSOrIP: <NFS_INTERNAL_DNS_NAME>
+  nfsMountPath: <NFS_MOUNT_PATH>
