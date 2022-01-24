@@ -1,0 +1,9 @@
+subscription_id="<REDACTED>"
+tenant_id="<REDACTED>"
+client_id="<REDACTED>"
+client_secret="<REDACTED>"
+prefix="cloud-hospital"
+environment="web"
+location="centralindia"
+vm_size="Standard_B2s"
+vm_count=1

@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wordpress
+    spec:
+      containers:
+        - name: wordpress
+          # upgraded from wordpress:php7.4 to wordpress:php8.1
+          image: wordpress:php8.1
+          imagePullPolicy: Always
+          env:
+            - name: WORDPRESS_DB_HOST
+              value: mysql:3306
+            - name: WORDPRESS_DB_NAME
+              value: wordpress
+            - name: WORDPRESS_DB_USER
+              value: wordpress
+            - name: WORDPRESS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql-wordpress-password
+            - name: WORDPRESS_TABLE_PREFIX
+              value: wp_
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 6
+            httpGet:
+              path: /wp-login.php
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 6
+            httpGet:
+              path: /wp-login.php
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          volumeMounts:
+            - mountPath: /var/www/html
+              name: data
+              subPath: wordpress
+          resources:
+            requests:
+              cpu: 500m
+              memory: 750Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: wordpress-pvc
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: wordpress-internal-svc
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: wordpress
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
