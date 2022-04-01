@@ -6,10 +6,14 @@ mysql:
     name: <PREFIX>-<ENVIRONMENT>-md01
     uri: /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<PREFIX>-<ENVIRONMENT>-rg01/providers/Microsoft.Compute/disks/<PREFIX>-<ENVIRONMENT>-md01
 wordpress:
-  managedDisk:
-    name: <PREFIX>-<ENVIRONMENT>-md02
-    uri: /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<PREFIX>-<ENVIRONMENT>-rg01/providers/Microsoft.Compute/disks/<PREFIX>-<ENVIRONMENT>-md02
+  storageShare:
+    # name: <PREFIX>-<ENVIRONMENT>-ss01
+    # storageAccount: <PREFIX><ENVIRONMENT>sa01
+    # # storageAccountKey: <STORAGE_ACCOUNT_KEY>
+    # resourceGroup: <PREFIX>-<ENVIRONMENT>-rg01
+    nfsInternalDNSOrIP: <NFS_INTERNAL_DNS_NAME>
+    nfsMountPath: <NFS_MOUNT_PATH>
 letsencrypt:
   email: <DOMAIN_EMAIL_ADDRESS>
-  server: https://acme-staging-v02.api.letsencrypt.org/directory
   # server: https://acme-v02.api.letsencrypt.org/directory
+  server: https://acme-staging-v02.api.letsencrypt.org/directory

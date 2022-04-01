@@ -17,8 +17,7 @@ spec:
     spec:
       containers:
         - name: wordpress
-          # upgraded from wordpress:php7.4 to wordpress:php8.1
-          image: wordpress:php8.1
+          image: wordpress:php8.1-apache
           imagePullPolicy: Always
           env:
             - name: WORDPRESS_DB_HOST
@@ -70,6 +69,14 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: wordpress-pvc
+        ## For SMB Azure file share
+        # - name: data
+        #   csi:
+        #     driver: file.csi.azure.com
+        #     volumeAttributes:
+        #       secretName: wordpress-secret
+        #       shareName: {{ .Values.wordpress.storageShare.name }}
+        #       mountOptions: "dir_mode=0777,file_mode=0777,cache=strict,actimeo=30"
 ---
 kind: Service
 apiVersion: v1

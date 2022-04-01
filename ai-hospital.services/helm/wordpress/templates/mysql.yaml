@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: mysql
-          image: mysql:8.0.28
+          image: mysql:8.0.28-debian
           imagePullPolicy: Always
           env:
             - name: MYSQL_ROOT_PASSWORD
@@ -43,7 +43,7 @@ spec:
           livenessProbe:
             exec:
               command: ["mysqladmin", "ping"]
-            initialDelaySeconds: 30
+            initialDelaySeconds: 60
             periodSeconds: 10
             timeoutSeconds: 5
           # readinessProbe:
