@@ -21,7 +21,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: WORDPRESS_DB_HOST
-              value: mysql:3306
+              value: mysql.mysql:3306
             - name: WORDPRESS_DB_NAME
               value: wordpress
             - name: WORDPRESS_DB_USER
@@ -29,8 +29,8 @@ spec:
             - name: WORDPRESS_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mysql-secret
-                  key: mysql-wordpress-password
+                  name: wordpress-secret
+                  key: db-password
             - name: WORDPRESS_TABLE_PREFIX
               value: wp_
           ports:
@@ -75,7 +75,7 @@ spec:
         #     driver: file.csi.azure.com
         #     volumeAttributes:
         #       secretName: wordpress-secret
-        #       shareName: {{ .Values.wordpress.storageShare.name }}
+        #       shareName: {{ .Values.storageShare.name }}
         #       mountOptions: "dir_mode=0777,file_mode=0777,cache=strict,actimeo=30"
 ---
 kind: Service

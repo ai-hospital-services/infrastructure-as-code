@@ -81,14 +81,23 @@ resource "azurerm_kubernetes_cluster" "aks01" {
   kubernetes_version  = "1.22.6"
 
   default_node_pool {
-    name           = "default"
-    node_count     = var.vm_count
-    vm_size        = var.vm_size
-    vnet_subnet_id = azurerm_subnet.subnet01.id
+    name                = "default"
+    node_count          = var.vm_min_count
+    vm_size             = var.vm_size
+    vnet_subnet_id      = azurerm_subnet.subnet01.id
+    enable_auto_scaling = true
+    min_count           = var.vm_min_count
+    max_count           = var.vm_max_count
   }
 
   identity {
     type = "SystemAssigned"
+  }
+
+  lifecycle {
+    ignore_changes = [
+      default_node_pool[0].node_count
+    ]
   }
 
   tags = {
@@ -148,8 +157,15 @@ resource "azurerm_storage_share" "ss01" {
   quota                = 100
 }
 
+resource "azurerm_storage_share" "ss02" {
+  name                 = "${var.prefix}-${var.environment}-ss02"
+  storage_account_name = azurerm_storage_account.sa01.name
+  enabled_protocol     = "NFS"
+  quota                = 100
+}
+
 resource "azurerm_storage_account_network_rules" "sanr01" {
-  storage_account_id = azurerm_storage_account.sa01.id
+  storage_account_id         = azurerm_storage_account.sa01.id
   default_action             = "Deny"
   virtual_network_subnet_ids = [azurerm_subnet.subnet01.id]
   bypass                     = ["Metrics"]

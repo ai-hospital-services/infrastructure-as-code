@@ -1,6 +1,6 @@
 # create secret vars file
 ```shell
-cp values.yaml values-secret.yaml
+cp wordpress/values.yaml wordpress/values-secret.yaml
 ```
 
 # helm install
@@ -12,7 +12,17 @@ helm install cert-manager cert-manager \
     --version v1.7.2 \
     --set installCRDs=true
 
-helm install wordpress . -f values-secret.yaml
+helm install mysql mysql -f mysql/values-secret.yaml
+
+helm install wordpress wordpress -f wordpress/values-secret.yaml
+
+helm install mailu-prerequisite mailu-prerequisite -f mailu-prerequisite/values-secret.yaml
+
+helm install mailu mailu \
+    --repo "https://mailu.github.io/helm-charts" \
+    --namespace mailu \
+    --values mailu-values-secret.yaml \
+    --version 0.3.1
 
 helm install ingress-nginx ingress-nginx \
     --repo https://kubernetes.github.io/ingress-nginx \
@@ -23,12 +33,16 @@ helm install ingress-nginx ingress-nginx \
 
 # helm upgrade
 ```shell
-helm upgrade wordpress . -f values-secret.yaml
+helm upgrade mysql mysql -f mysql/values-secret.yaml
+helm upgrade wordpress wordpress -f wordpress/values-secret.yaml
+helm upgrade mailu-prerequisite mailu-prerequisite -f mailu-prerequisite/values-secret.yaml
 ```
 
 # helm uninstall
 ```shell
 helm uninstall ingress-nginx -n ingress-nginx
+helm uninstall mailu -n mailu
+helm uninstall mailu-prerequisite
 helm uninstall wordpress
 helm uninstall cert-manager -n cert-manager
 ```

@@ -1,39 +1,6 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: mysql-pv
-spec:
-  capacity:
-    storage: 32Gi
-  volumeMode: Filesystem
-  storageClassName: ""
-  accessModes:
-    - ReadWriteOnce
-  azureDisk:
-    kind: Managed
-    diskName: {{ .Values.mysql.managedDisk.name }}
-    diskURI: {{ .Values.mysql.managedDisk.uri }}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mysql-pvc
-  namespace: {{ .Values.namespace }}
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 32Gi
-  volumeMode: Filesystem
-  volumeName: mysql-pv
-  storageClassName: ""
-
----
-
-apiVersion: v1
-kind: PersistentVolume
-metadata:
   name: wordpress-pv
   labels:
     type: nfs
@@ -43,8 +10,8 @@ spec:
   accessModes:
     - ReadWriteMany
   nfs:
-    server: {{ .Values.wordpress.storageShare.nfsInternalDNSOrIP }}
-    path: {{ .Values.wordpress.storageShare.nfsMountPath }}
+    server: {{ .Values.storageShare.nfsInternalDNSOrIP }}
+    path: {{ .Values.storageShare.nfsMountPath }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -78,9 +45,9 @@ spec:
 #     readOnly: false
 #     volumeHandle: wordpress-pv
 #     volumeAttributes:
-#       shareName: {{ .Values.wordpress.storageShare.name }}
-#       storageAccount: {{ .Values.wordpress.storageShare.storageAccount }}
-#       resourceGroup: {{ .Values.wordpress.storageShare.resourceGroup }}
+#       shareName: {{ .Values.storageShare.name }}
+#       storageAccount: {{ .Values.storageShare.storageAccount }}
+#       resourceGroup: {{ .Values.storageShare.resourceGroup }}
 #   mountOptions:
 #     - dir_mode=0777
 #     - file_mode=0777

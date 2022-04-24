@@ -1,0 +1,6 @@
+namespace: <NAMESPACE>
+rootPassword: <MYSQL_ROOT_PASSWORD>
+wordpressPassword: <MYSQL_WORDPRESS_PASSWORD>
+managedDisk:
+  name: <PREFIX>-<ENVIRONMENT>-md01
+  uri: /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<PREFIX>-<ENVIRONMENT>-rg01/providers/Microsoft.Compute/disks/<PREFIX>-<ENVIRONMENT>-md01

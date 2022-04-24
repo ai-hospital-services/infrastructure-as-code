@@ -24,7 +24,7 @@ spec:
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  key: mysql-root-password
+                  key: root-password
                   name: mysql-secret
             - name: MYSQL_DATABASE
               value: wordpress
@@ -33,7 +33,7 @@ spec:
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  key: mysql-wordpress-password
+                  key: wordpress-password
                   name: mysql-secret
           args: ["--authentication-policy=mysql_native_password"]
           ports:
