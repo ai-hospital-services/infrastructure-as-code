@@ -3,6 +3,27 @@
 cp wordpress/values.yaml wordpress/values-secret.yaml
 ```
 
+# helm lint
+```shell
+helm lint mysql -f mysql/values-secret.yaml
+
+helm lint wordpress -f wordpress/values-secret.yaml
+
+helm lint mailu-prerequisite -f mailu-prerequisite/values-secret.yaml
+```
+
+# helm debug
+```shell
+helm install mysql mysql --debug --dry-run -f mysql/values-secret.yaml
+helm template mysql mysql --debug --dry-run -f mysql/values-secret.yaml
+
+helm install wordpress wordpress --debug --dry-run -f wordpress/values-secret.yaml
+helm template wordpress wordpress --debug --dry-run -f wordpress/values-secret.yaml
+
+helm install mailu-prerequisite mailu-prerequisite  --debug --dry-run -f mailu-prerequisite/values-secret.yaml
+helm template mailu-prerequisite mailu-prerequisite  --debug --dry-run -f mailu-prerequisite/values-secret.yaml
+```
+
 # helm install
 ```shell
 helm install cert-manager cert-manager \
@@ -44,6 +65,7 @@ helm uninstall ingress-nginx -n ingress-nginx
 helm uninstall mailu -n mailu
 helm uninstall mailu-prerequisite
 helm uninstall wordpress
+helm uninstall mysql
 helm uninstall cert-manager -n cert-manager
 ```
 

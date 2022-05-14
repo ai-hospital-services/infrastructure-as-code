@@ -5,6 +5,6 @@ client_secret="<REDACTED>"
 prefix="ai-hospital"
 environment="web"
 location="centralindia"
-vm_size="Standard_B2ms"
+vm_size="standard_d2a_v4"
 vm_min_count=2
 vm_max_count=5

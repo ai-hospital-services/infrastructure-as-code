@@ -77,18 +77,3 @@ spec:
         #       secretName: wordpress-secret
         #       shareName: {{ .Values.storageShare.name }}
         #       mountOptions: "dir_mode=0777,file_mode=0777,cache=strict,actimeo=30"
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: wordpress-internal-svc
-  namespace: {{ .Values.namespace }}
-spec:
-  selector:
-    app: wordpress
-  type: ClusterIP
-  ports:
-    - name: http
-      port: 80
-      targetPort: http
-      protocol: TCP

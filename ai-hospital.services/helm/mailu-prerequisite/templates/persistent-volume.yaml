@@ -12,19 +12,3 @@ spec:
   nfs:
     server: {{ .Values.storageShare.nfsInternalDNSOrIP }}
     path: {{ .Values.storageShare.nfsMountPath }}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mailu-pvc
-  namespace: {{ .Values.namespace }}
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: ""
-  resources:
-    requests:
-      storage: 32Gi
-  selector: 
-    matchLabels:
-      type: nfs

@@ -64,18 +64,3 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: mysql-pvc
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mysql
-  namespace: {{ .Values.namespace }}
-  labels:
-    app: mysql
-spec:
-  selector:
-    app: mysql
-  clusterIP: None
-  ports:
-  - name: mysql
-    port: 3306

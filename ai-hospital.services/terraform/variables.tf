@@ -20,7 +20,7 @@ variable "location" {
   default = "centralindia"
 }
 variable "vm_size" {
-  default = "Standard_B2ms"
+  default = "standard_d2a_v4"
 }
 variable "vm_min_count" {
   type    = number
