@@ -1,5 +1,5 @@
-**/?*secret*
-**/.terraform*
-**/*.tfstate*
 .DS_Store
-**/temp
+?*secret*
+.terraform*
+*.tfstate*
+data/

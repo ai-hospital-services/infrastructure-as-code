@@ -1,0 +1,12 @@
+variable "labels" {}
+variable "region" {}
+variable "zone" {}
+variable "replica_zone" {}
+variable "prefix" {}
+variable "environment" {}
+variable "network_id" {}
+variable "subnet_id" {}
+variable "services_ip_range_name" {}
+variable "pods_ip_range_name" {}
+variable "machine_type" {}
+variable "node_count" {}

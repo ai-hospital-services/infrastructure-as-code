@@ -1,0 +1,148 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "mongodb.fullname" . }}
+  labels:
+    {{- include "mongodb.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "mongodb.fullname" . }}
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "mongodb.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "mongodb.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "mongodb.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: mongodb
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+              - bash
+              - "-c"
+              - |
+                mongosh -u $MONGO_INITDB_ROOT_USERNAME -p $MONGO_INITDB_ROOT_PASSWORD --eval db.adminCommand\(\"ping\"\)
+            initialDelaySeconds: 30
+            failureThreshold: 3
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+              - bash
+              - "-c"
+              - |
+                mongosh -u $MONGO_INITDB_ROOT_USERNAME -p $MONGO_INITDB_ROOT_PASSWORD --eval db.adminCommand\(\"ping\"\)
+            initialDelaySeconds: 30
+            failureThreshold: 3
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: rootUsername
+                  name: {{ include "mongodb.fullname" . }}
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: rootPassword
+                  name: {{ include "mongodb.fullname" . }}
+            - name: MONGO_INITDB_DATABASE
+              value: {{ .Values.mongodb.initDB }}
+            - name: APP_INITDB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: appUsername
+                  name: {{ include "mongodb.fullname" . }}
+            - name: APP_INITDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: appPassword
+                  name: {{ include "mongodb.fullname" . }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /docker-entrypoint-initdb.d
+            - name: data
+              mountPath: /data/db
+              subPath: mongodb
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "mongodb.fullname" .}}
+        # - name: data
+        #   hostPath:
+        #     path: /tmp/mongodb
+        #     type: DirectoryOrCreate
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "mongodb.fullname" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  # # or, if using the automatic volume claim templates for stateful set
+  # volumeClaimTemplates:
+  #   - metadata:
+  #       name: {{ include "mongodb.fullname" . }}
+  #     spec:
+  #       accessModes: [ "ReadWriteOnce" ]
+  #       resources:
+  #         requests:
+  #           storage: {{ .Values.persistentVolume.size }}
+# ---
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: pods-simple-pod
+# spec:
+#   containers:
+#     - image: busybox
+#       imagePullPolicy: {{ .Values.image.pullPolicy }}
+#       name: pods-simple-container
+#       command:
+#         - sleep
+#         - "3600"
+#       volumeMounts:
+#         - name: data
+#           mountPath: /data/db
+#           subPath: mongodb
+#   volumes:
+#     - name: data
+#       persistentVolumeClaim:
+#         claimName: {{ include "mongodb.fullname" . }}
