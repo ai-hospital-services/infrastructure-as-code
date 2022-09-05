@@ -7,7 +7,7 @@ resource "google_container_cluster" "gke01" {
   # node pool and immediately delete it.
   remove_default_node_pool = true
   initial_node_count       = 1
-  node_locations           = [var.zone, var.replica_zone]
+  node_locations           = [var.zone]
 
   network    = var.network_id
   subnetwork = var.subnet_id
@@ -18,7 +18,7 @@ resource "google_container_cluster" "gke01" {
   }
 
   release_channel {
-    channel = "REGULAR"
+    channel = "RAPID"
   }
 
   private_cluster_config {
@@ -27,7 +27,7 @@ resource "google_container_cluster" "gke01" {
     master_global_access_config {
       enabled = false
     }
-    master_ipv4_cidr_block = "172.16.0.0/28"
+    master_ipv4_cidr_block = var.master_ip_range
   }
 
   lifecycle {
@@ -37,9 +37,9 @@ resource "google_container_cluster" "gke01" {
   }
 }
 
-resource "google_service_account" "nodepoolsa01" {
+resource "google_service_account" "nodepool_sa01" {
   account_id   = "nodepool-sa01"
-  display_name = "Service Account for ${var.prefix}-${var.environment}-nodepool01"
+  display_name = "Service Account for ${var.prefix}-${var.environment}-nodepool01 and nodepool02"
 }
 
 resource "google_container_registry" "asiagcr" {
@@ -49,7 +49,7 @@ resource "google_container_registry" "asiagcr" {
 resource "google_storage_bucket_iam_member" "viewer" {
   bucket = google_container_registry.asiagcr.id
   role   = "roles/storage.objectViewer"
-  member = "serviceAccount:${google_service_account.nodepoolsa01.email}"
+  member = "serviceAccount:${google_service_account.nodepool_sa01.email}"
 }
 
 resource "google_container_node_pool" "nodepool01" {
@@ -60,13 +60,15 @@ resource "google_container_node_pool" "nodepool01" {
   node_locations = [var.zone, var.replica_zone]
 
   node_config {
-    machine_type = var.machine_type
+    machine_type = var.machine_type_pool01
     disk_type    = "pd-ssd"
     disk_size_gb = 50
 
     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
-    service_account = google_service_account.nodepoolsa01.email
+    service_account = google_service_account.nodepool_sa01.email
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
+
+    tags = ["${var.prefix}-${var.environment}-nodepool01"]
 
     labels = var.labels
   }
@@ -91,4 +93,64 @@ resource "google_container_node_pool" "nodepool01" {
       node_count
     ]
   }
+}
+
+resource "google_container_node_pool" "nodepool02" {
+  name           = "${var.prefix}-${var.environment}-nodepool02"
+  location       = var.region
+  cluster        = google_container_cluster.gke01.name
+  node_count     = var.node_count
+  node_locations = [var.zone, var.replica_zone]
+
+  node_config {
+    machine_type = var.machine_type_pool02
+    disk_type    = "pd-ssd"
+    disk_size_gb = 50
+
+    # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
+    service_account = google_service_account.nodepool_sa01.email
+    oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
+
+    tags = ["${var.prefix}-${var.environment}-nodepool02"]
+
+    labels = var.labels
+  }
+
+  autoscaling {
+    min_node_count = 1
+    max_node_count = 5
+  }
+
+  management {
+    auto_repair  = true
+    auto_upgrade = true
+  }
+
+  upgrade_settings {
+    max_surge       = 1
+    max_unavailable = 1
+  }
+
+  lifecycle {
+    ignore_changes = [
+      node_count
+    ]
+  }
+}
+
+resource "google_compute_firewall" "webhook_firewallrule" {
+  name        = "${google_container_cluster.gke01.name}-webhook"
+  network     = var.network_id
+  description = "Port 8443 for admission controller webhook"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["8443"]
+  }
+
+  source_ranges = [var.master_ip_range]
+  target_tags = [
+    google_container_node_pool.nodepool01.node_config[0].tags[0],
+    google_container_node_pool.nodepool02.node_config[0].tags[0]
+  ]
 }

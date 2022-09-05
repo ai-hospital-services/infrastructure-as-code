@@ -6,7 +6,9 @@ variable "prefix" {}
 variable "environment" {}
 variable "network_id" {}
 variable "subnet_id" {}
+variable "master_ip_range" {}
 variable "services_ip_range_name" {}
 variable "pods_ip_range_name" {}
-variable "machine_type" {}
+variable "machine_type_pool01" {}
+variable "machine_type_pool02" {}
 variable "node_count" {}

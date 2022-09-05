@@ -1,3 +1,7 @@
+locals {
+  master_ip_range = "172.16.0.0/28"
+}
+
 resource "google_compute_network" "network01" {
   name                    = "${var.prefix}-${var.environment}-vpc01"
   auto_create_subnetworks = false
@@ -39,12 +43,22 @@ resource "google_compute_router_nat" "nat01" {
   }
 }
 
+resource "google_compute_address" "app_ip01" {
+  name         = "${var.prefix}-${var.environment}-app-ip01"
+  address_type = "EXTERNAL"
+  network_tier = "PREMIUM"
+}
+
 output "network01_id" {
   value = google_compute_network.network01.id
 }
 
 output "subnet01_id" {
   value = google_compute_subnetwork.subnet01.id
+}
+
+output "master_ip_range" {
+  value = local.master_ip_range
 }
 
 output "services_ip_range_name" {
