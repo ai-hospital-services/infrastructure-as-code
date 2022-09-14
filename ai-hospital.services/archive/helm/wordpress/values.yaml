@@ -1,0 +1,14 @@
+namespace: <NAMESPACE>
+dbPassword: <DB_PASSWORD>
+storageShare:
+  nfsInternalDNSOrIP: <NFS_INTERNAL_DNS_NAME>
+  nfsMountPath: <NFS_MOUNT_PATH>
+  ## For SMB Azure file share
+  # name: <PREFIX>-<ENVIRONMENT>-ss01
+  # storageAccount: <PREFIX><ENVIRONMENT>sa01
+  # # storageAccountKey: <STORAGE_ACCOUNT_KEY>
+  # resourceGroup: <PREFIX>-<ENVIRONMENT>-rg01
+letsencrypt:
+  email: <DOMAIN_EMAIL_ADDRESS>
+  # server: https://acme-v02.api.letsencrypt.org/directory
+  server: https://acme-staging-v02.api.letsencrypt.org/directory

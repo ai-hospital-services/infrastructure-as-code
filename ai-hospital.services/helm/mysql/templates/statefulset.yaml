@@ -1,16 +1,17 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: {{ include "wordpress.fullname" . }}
+  name: {{ include "mysql.fullname" . }}
   labels:
-    {{- include "wordpress.labels" . | nindent 4 }}
+    {{- include "mysql.labels" . | nindent 4 }}
 spec:
+  serviceName: {{ include "mysql.fullname" . }}
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "wordpress.selectorLabels" . | nindent 6 }}
+      {{- include "mysql.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,13 +19,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "wordpress.selectorLabels" . | nindent 8 }}
+        {{- include "mysql.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "wordpress.serviceAccountName" . }}
+      serviceAccountName: {{ include "mysql.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -34,22 +35,28 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - name: http
-              containerPort: 80
+            - name: mysql
+              containerPort: {{ .Values.service.port }}
               protocol: TCP
           livenessProbe:
-            httpGet:
-              path: /wp-login.php
-              port: http
+            exec:
+              command:
+              - bash
+              - "-c"
+              - |
+                mysqladmin -h localhost -uroot -p${MYSQL_ROOT_PASSWORD} ping
             initialDelaySeconds: 30
             failureThreshold: 3
             periodSeconds: 15
             successThreshold: 1
             timeoutSeconds: 10
           readinessProbe:
-            httpGet:
-              path: /wp-login.php
-              port: http
+            exec:
+              command:
+              - bash
+              - "-c"
+              - |
+                mysql -h localhost -uroot -p${MYSQL_ROOT_PASSWORD} -e "SELECT 1"
             initialDelaySeconds: 30
             failureThreshold: 3
             periodSeconds: 15
@@ -58,34 +65,35 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
-            - name: WORDPRESS_DB_HOST
-              value: {{ .Values.wordpress.mysqlHost }}
-            - name: WORDPRESS_DB_NAME
-              value: {{ .Values.wordpress.mysqlDB }}
-            - name: WORDPRESS_DB_USER
+            - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "wordpress.fullname" . }}
-                  key: mysqlUsername
-            - name: WORDPRESS_DB_PASSWORD
+                  key: rootPassword
+                  name: {{ include "mysql.fullname" . }}
+            - name: MYSQL_DATABASE
+              value: {{ .Values.mysql.wordpressDB }}
+            - name: MYSQL_USER
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "wordpress.fullname" . }}
-                  key: mysqlPassword
-            - name: WORDPRESS_TABLE_PREFIX
-              value: wp_
+                  key: wordpressUsername
+                  name: {{ include "mysql.fullname" . }}
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: wordpressPassword
+                  name: {{ include "mysql.fullname" . }}
           volumeMounts:
             - name: data
-              mountPath: /var/www/html
-              subPath: wordpress
+              mountPath: /var/lib/mysql
+              subPath: mysql
       volumes:
         # - name: data
         #   hostPath:
-        #     path: /tmp/wordpress
+        #     path: /tmp/mysql
         #     type: DirectoryOrCreate
         - name: data
           persistentVolumeClaim:
-            claimName: {{ include "wordpress.fullname" . }}
+            claimName: {{ include "mysql.fullname" . }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -105,7 +113,7 @@ kind: Pod
 metadata:
   name: pods-simple-pod
 spec:
-  serviceAccountName: {{ include "wordpress.serviceAccountName" . }}
+  serviceAccountName: {{ include "mysql.serviceAccountName" . }}
   securityContext:
     {{- toYaml .Values.podSecurityContext | nindent 4 }}
   containers:
@@ -117,14 +125,14 @@ spec:
         - "3600"
       volumeMounts:
         - name: data
-          mountPath: /var/www/html
-          subPath: wordpress
+          mountPath: /var/lib/mysql
+          subPath: mysql
   volumes:
     # - name: data
     #   hostPath:
-    #     path: /tmp/wordpress
+    #     path: /tmp/mysql
     #     type: DirectoryOrCreate
     - name: data
       persistentVolumeClaim:
-        claimName: {{ include "wordpress.fullname" . }}
+        claimName: {{ include "mysql.fullname" . }}
 */}}

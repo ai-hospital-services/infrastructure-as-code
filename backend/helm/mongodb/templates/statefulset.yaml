@@ -126,23 +126,32 @@ spec:
   #         requests:
   #           storage: {{ .Values.persistentVolume.size }}
 # ---
-# apiVersion: v1
-# kind: Pod
-# metadata:
-#   name: pods-simple-pod
-# spec:
-#   containers:
-#     - image: busybox
-#       imagePullPolicy: {{ .Values.image.pullPolicy }}
-#       name: pods-simple-container
-#       command:
-#         - sleep
-#         - "3600"
-#       volumeMounts:
-#         - name: data
-#           mountPath: /data/db
-#           subPath: mongodb
-#   volumes:
-#     - name: data
-#       persistentVolumeClaim:
-#         claimName: {{ include "mongodb.fullname" . }}
+{{- /*
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pods-simple-pod
+spec:
+  serviceAccountName: {{ include "mongodb.serviceAccountName" . }}
+  securityContext:
+    {{- toYaml .Values.podSecurityContext | nindent 4 }}
+  containers:
+    - image: busybox
+      imagePullPolicy: {{ .Values.image.pullPolicy }}
+      name: pods-simple-container
+      command:
+        - sleep
+        - "3600"
+      volumeMounts:
+        - name: data
+          mountPath: /data/db
+          subPath: mongodb
+  volumes:
+    # - name: data
+    #   hostPath:
+    #     path: /tmp/mongodb
+    #     type: DirectoryOrCreate
+    - name: data
+      persistentVolumeClaim:
+        claimName: {{ include "mongodb.fullname" . }}
+*/}}
