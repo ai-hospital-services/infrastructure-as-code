@@ -26,3 +26,12 @@ variable "node_count" {
   type    = number
   default = 1
 }
+variable "machine_type_vm" {
+  default = "t2a-standard-2"
+}
+variable "image_vm" {
+  default = "family/debian-11-arm64"
+}
+variable "ssh_ip" {
+  default = ""
+}

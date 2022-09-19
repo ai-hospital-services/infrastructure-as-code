@@ -45,3 +45,19 @@ module "storage" {
   prefix       = var.prefix
   environment  = var.environment
 }
+
+module "compute" {
+  source          = "./compute"
+  providers       = { google = google.default }
+  labels          = local.labels
+  zone            = var.zone
+  prefix          = var.prefix
+  environment     = var.environment
+  network_id      = module.network.network01_id
+  subnet_id       = module.network.subnet01_id
+  machine_type_vm = var.machine_type_vm
+  image_vm        = var.image_vm
+  ssh_ip          = var.ssh_ip
+
+  depends_on = [module.network]
+}
