@@ -57,7 +57,7 @@ resource "google_container_node_pool" "nodepool01" {
   location       = var.region
   cluster        = google_container_cluster.gke01.name
   node_count     = var.node_count
-  node_locations = [var.zone, var.replica_zone]
+  node_locations = [var.zone]
 
   node_config {
     machine_type = var.machine_type_pool01
@@ -100,7 +100,7 @@ resource "google_container_node_pool" "nodepool02" {
   location       = var.region
   cluster        = google_container_cluster.gke01.name
   node_count     = var.node_count
-  node_locations = [var.zone, var.replica_zone]
+  node_locations = [var.zone] # TODO: add var.replica_zone to the list
 
   node_config {
     machine_type = var.machine_type_pool02
