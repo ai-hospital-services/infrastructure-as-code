@@ -14,10 +14,22 @@ module "network" {
   environment = var.environment
 }
 
+module "storage" {
+  source       = "./storage"
+  providers    = { google = google.default }
+  labels       = local.labels
+  region       = var.region
+  zone         = var.zone
+  replica_zone = var.replica_zone
+  prefix       = var.prefix
+  environment  = var.environment
+}
+
 module "cluster" {
   source                 = "./cluster"
   providers              = { google = google.default }
   labels                 = local.labels
+  project_id             = var.project_id
   region                 = var.region
   zone                   = var.zone
   replica_zone           = var.replica_zone
@@ -31,19 +43,9 @@ module "cluster" {
   machine_type_pool01    = var.machine_type_pool01
   machine_type_pool02    = var.machine_type_pool02
   node_count             = var.node_count
+  storagebucket_id       = module.storage.storagebucket01_id
 
-  depends_on = [module.network]
-}
-
-module "storage" {
-  source       = "./storage"
-  providers    = { google = google.default }
-  labels       = local.labels
-  region       = var.region
-  zone         = var.zone
-  replica_zone = var.replica_zone
-  prefix       = var.prefix
-  environment  = var.environment
+  depends_on = [module.network, module.storage]
 }
 
 module "compute" {

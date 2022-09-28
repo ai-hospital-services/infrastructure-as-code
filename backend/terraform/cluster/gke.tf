@@ -21,6 +21,10 @@ resource "google_container_cluster" "gke01" {
     channel = "RAPID"
   }
 
+  workload_identity_config {
+    workload_pool = "${var.project_id}.svc.id.goog"
+  }
+
   private_cluster_config {
     enable_private_nodes    = true
     enable_private_endpoint = false
@@ -37,16 +41,14 @@ resource "google_container_cluster" "gke01" {
   }
 }
 
+resource "google_container_registry" "asiagcr" {
+  location = "ASIA"
+}
 resource "google_service_account" "nodepool_sa01" {
   account_id   = "nodepool-sa01"
   display_name = "Service Account for ${var.prefix}-${var.environment}-nodepool01 and nodepool02"
 }
-
-resource "google_container_registry" "asiagcr" {
-  location = "ASIA"
-}
-
-resource "google_storage_bucket_iam_member" "viewer" {
+resource "google_storage_bucket_iam_member" "object_viewer01" {
   bucket = google_container_registry.asiagcr.id
   role   = "roles/storage.objectViewer"
   member = "serviceAccount:${google_service_account.nodepool_sa01.email}"
@@ -67,6 +69,10 @@ resource "google_container_node_pool" "nodepool01" {
     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
     service_account = google_service_account.nodepool_sa01.email
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
+
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
 
     tags = ["${var.prefix}-${var.environment}-nodepool01"]
 
@@ -111,6 +117,10 @@ resource "google_container_node_pool" "nodepool02" {
     service_account = google_service_account.nodepool_sa01.email
     oauth_scopes    = ["https://www.googleapis.com/auth/cloud-platform"]
 
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
+
     tags = ["${var.prefix}-${var.environment}-nodepool02"]
 
     labels = var.labels
@@ -153,4 +163,37 @@ resource "google_compute_firewall" "webhook_firewallrule" {
     google_container_node_pool.nodepool01.node_config[0].tags[0],
     google_container_node_pool.nodepool02.node_config[0].tags[0]
   ]
+}
+
+resource "google_service_account" "kfp_system_sa01" {
+  account_id   = "gke01-kfp-system"
+  display_name = "Service Account for kubeflow kfp-system"
+}
+resource "google_storage_bucket_iam_member" "object_viewer02" {
+  bucket = var.storagebucket_id
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${google_service_account.kfp_system_sa01.email}"
+}
+resource "google_service_account_iam_binding" "kfp_system_iam01" {
+  service_account_id = google_service_account.kfp_system_sa01.name
+  role               = "roles/iam.workloadIdentityUser"
+  members = [
+    "serviceAccount:${var.project_id}.svc.id.goog[kubeflow/ml-pipeline-ui]",
+    "serviceAccount:${var.project_id}.svc.id.goog[kubeflow/ml-pipeline-visualizationserver]",
+  ]
+}
+
+resource "google_service_account" "kfp_user_sa01" {
+  account_id   = "gke01-kfp-user"
+  display_name = "Service Account for kubeflow kfp-user"
+}
+resource "google_storage_bucket_iam_member" "object_admin01" {
+  bucket = var.storagebucket_id
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.kfp_user_sa01.email}"
+}
+resource "google_service_account_iam_binding" "kfp_user_iam01" {
+  service_account_id = google_service_account.kfp_user_sa01.name
+  role               = "roles/iam.workloadIdentityUser"
+  members            = ["serviceAccount:${var.project_id}.svc.id.goog[kubeflow/pipeline-runner]"]
 }

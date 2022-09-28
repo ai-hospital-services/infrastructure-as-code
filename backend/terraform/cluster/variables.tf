@@ -1,4 +1,5 @@
 variable "labels" {}
+variable "project_id" {}
 variable "region" {}
 variable "zone" {}
 variable "replica_zone" {}
@@ -12,3 +13,4 @@ variable "pods_ip_range_name" {}
 variable "machine_type_pool01" {}
 variable "machine_type_pool02" {}
 variable "node_count" {}
+variable "storagebucket_id" {}

@@ -17,7 +17,7 @@ variable "environment" {
   default = "prototype"
 }
 variable "machine_type_pool01" {
-  default = "e2-small"
+  default = "e2-medium"
 }
 variable "machine_type_pool02" {
   default = "t2a-standard-1"
