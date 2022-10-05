@@ -1,1 +1,11 @@
-project_id   = "<PROJECT ID>"
+project_id="<PROJECT ID>"
+region="<REGION>"
+zone="<ZONE>"
+replica_zone="<REPLICA ZONE>"
+prefix="<PREFIX>"
+environment="<ENVIRONMENT>"
+machine_type_pool01="e2-medium"
+machine_type_pool02="t2a-standard-1"
+node_count=1
+machine_type_vm="t2a-standard-2"
+ssh_ip="<SSH IP>"
