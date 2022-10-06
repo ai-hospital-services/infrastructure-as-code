@@ -7,8 +7,8 @@
 Table of Contents
 - [infrastructure-as-code](#infrastructure-as-code)
 	- [Repository map](#repository-map)
-	- [Built With](#built-with)
-	- [Getting Started](#getting-started)
+	- [Built with](#built-with)
+	- [Getting started](#getting-started)
 		- [Prerequisites](#prerequisites)
 		- [Setup backend infrastructure](#setup-backend-infrastructure)
 		- [Setup kube config context](#setup-kube-config-context)
@@ -33,13 +33,12 @@ Table of Contents
 ```
 
 
-## Built With
-
+## Built with
 - Terraform v1.3
 - Kubernetes & Helm chart
 
 
-## Getting Started
+## Getting started
 To get a local copy up and running, follow these simple example steps.
 
 ### Prerequisites
@@ -96,7 +95,7 @@ touch mongodb/values-secret.yaml
 #   rootUsername: "<MONGODB ROOT USERNAME>"
 #   rootPassword: "<MONGODB ROOT PASSWORD>"
 #   appUsername: "<MONGODB APP USERNAME>"
-#   appPassword: "<MONGODB ROOT PASSWORD>"
+#   appPassword: "<MONGODB APP PASSWORD>"
 # persistentVolume:
 #   diskId: "projects/<PROJECT ID>/regions/<REGION>/disks/<PREFIX>-<ENVIRONMENT>-mongodbdisk01"
 
@@ -123,7 +122,7 @@ cd ai-hospital-services/helm
 # prepare the 'mysql/values-secret.yaml'
 touch wordpress/values-secret.yaml
 
-# update the 'mysql/values-secret.tfvars' file like the following, where,
+# update the 'mysql/values-secret.yaml' file like the following, where,
 # mysql:
 #   rootPassword: "<MYSQL ROOT PASSWORD>"
 #   wordpressUsername: "<MYSQL WORDPRESS USERNAME>"
@@ -154,7 +153,7 @@ cd ai-hospital-services/helm
 # prepare the 'wordpress/values-secret.yaml'
 touch wordpress/values-secret.yaml
 
-# update the 'wordpress/values-secret.tfvars' file like the following, where,
+# update the 'wordpress/values-secret.yaml' file like the following, where,
 # wordpress:
 #   mysqlUsername: "<MYSQL WORDPRESS USERNAME>"
 #   mysqlPassword: "<MYSQL WORDPRESS PASSWORD>"
