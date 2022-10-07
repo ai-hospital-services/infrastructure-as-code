@@ -4,6 +4,8 @@
 
 > Infrastructure as Code (IaC) for AI-HOSPITAL.SERVICES
 
+![gcp-topology-infrastructure](media/gcp-topology-infrastructure.png)
+
 Table of Contents
 - [infrastructure-as-code](#infrastructure-as-code)
 	- [Repository map](#repository-map)
@@ -39,7 +41,7 @@ Table of Contents
 
 
 ## Getting started
-To get a local copy up and running, follow these simple example steps.
+To get a local copy up and running, follow these steps.
 
 ### Prerequisites
 - Install terraform: https://learn.hashicorp.com/tutorials/terraform/install-cli
