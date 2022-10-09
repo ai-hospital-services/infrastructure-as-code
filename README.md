@@ -2,7 +2,8 @@
 
 [![license](https://img.shields.io/github/license/ai-hospital-services/medicine-prescriber-prototype)](/LICENSE)
 
-> Infrastructure as Code (IaC) for AI-HOSPITAL.SERVICES
+> Infrastructure as Code (IaC) for AI-HOSPITAL.SERVICES  
+> Visit https://github.com/ai-hospital-services/medicine-prescriber-prototype to install the remaining Kubernetes workloads.
 
 ![gcp-topology-infrastructure](media/gcp-topology-infrastructure.png)
 
@@ -180,6 +181,7 @@ helm upgrade -i wordpress wordpress -n wordpress -f wordpress/values-secret.yaml
 helm delete -n wordpress wordpress
 kubectl delete namespace wordpress
 ```
+Visit https://github.com/ai-hospital-services/medicine-prescriber-prototype to install the remaining Kubernetes workloads.
 
 
 ## Authors
