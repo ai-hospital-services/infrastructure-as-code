@@ -1,0 +1,9 @@
+variable "labels" {}
+variable "zone" {}
+variable "prefix" {}
+variable "environment" {}
+variable "network_id" {}
+variable "subnet_id" {}
+variable "machine_type_vm" {}
+variable "image_vm" {}
+variable "ssh_ip" {}

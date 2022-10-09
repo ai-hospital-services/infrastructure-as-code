@@ -1,79 +1,130 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: wordpress
-  namespace: {{ .Values.namespace }}
+  name: {{ include "wordpress.fullname" . }}
+  labels:
+    {{- include "wordpress.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
-      app: wordpress
-  strategy:
-    type: Recreate
+      {{- include "wordpress.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
-        app: wordpress
+        {{- include "wordpress.selectorLabels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "wordpress.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: wordpress
-          image: wordpress:php8.1-apache
-          imagePullPolicy: Always
-          env:
-            - name: WORDPRESS_DB_HOST
-              value: mysql.mysql:3306
-            - name: WORDPRESS_DB_NAME
-              value: wordpress
-            - name: WORDPRESS_DB_USER
-              value: wordpress
-            - name: WORDPRESS_DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: wordpress-secret
-                  key: db-password
-            - name: WORDPRESS_TABLE_PREFIX
-              value: wp_
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
               containerPort: 80
               protocol: TCP
           livenessProbe:
-            failureThreshold: 6
             httpGet:
               path: /wp-login.php
               port: http
-              scheme: HTTP
-            initialDelaySeconds: 120
-            periodSeconds: 10
-            successThreshold: 1
-            timeoutSeconds: 5
-          readinessProbe:
-            failureThreshold: 6
-            httpGet:
-              path: /wp-login.php
-              port: http
-              scheme: HTTP
             initialDelaySeconds: 30
-            periodSeconds: 10
+            failureThreshold: 3
+            periodSeconds: 15
             successThreshold: 1
-            timeoutSeconds: 5
-          volumeMounts:
-            - mountPath: /var/www/html
-              name: data
-              subPath: wordpress
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /wp-login.php
+              port: http
+            initialDelaySeconds: 30
+            failureThreshold: 3
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 10
           resources:
-            requests:
-              cpu: 500m
-              memory: 750Mi
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: WORDPRESS_DB_HOST
+              value: {{ .Values.wordpress.mysqlHost }}
+            - name: WORDPRESS_DB_NAME
+              value: {{ .Values.wordpress.mysqlDB }}
+            - name: WORDPRESS_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "wordpress.fullname" . }}
+                  key: mysqlUsername
+            - name: WORDPRESS_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "wordpress.fullname" . }}
+                  key: mysqlPassword
+            - name: WORDPRESS_TABLE_PREFIX
+              value: wp_
+          volumeMounts:
+            - name: data
+              mountPath: /var/www/html
+              subPath: wordpress
       volumes:
+        # - name: data
+        #   hostPath:
+        #     path: /tmp/wordpress
+        #     type: DirectoryOrCreate
         - name: data
           persistentVolumeClaim:
-            claimName: wordpress-pvc
-        ## For SMB Azure file share
-        # - name: data
-        #   csi:
-        #     driver: file.csi.azure.com
-        #     volumeAttributes:
-        #       secretName: wordpress-secret
-        #       shareName: {{ .Values.storageShare.name }}
-        #       mountOptions: "dir_mode=0777,file_mode=0777,cache=strict,actimeo=30"
+            claimName: {{ include "wordpress.fullname" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+# ---
+{{- /*
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pods-simple-pod
+spec:
+  serviceAccountName: {{ include "wordpress.serviceAccountName" . }}
+  securityContext:
+    {{- toYaml .Values.podSecurityContext | nindent 4 }}
+  containers:
+    - image: busybox
+      imagePullPolicy: {{ .Values.image.pullPolicy }}
+      name: pods-simple-container
+      command:
+        - sleep
+        - "3600"
+      volumeMounts:
+        - name: data
+          mountPath: /var/www/html
+          subPath: wordpress
+  volumes:
+    # - name: data
+    #   hostPath:
+    #     path: /tmp/wordpress
+    #     type: DirectoryOrCreate
+    - name: data
+      persistentVolumeClaim:
+        claimName: {{ include "wordpress.fullname" . }}
+*/}}
